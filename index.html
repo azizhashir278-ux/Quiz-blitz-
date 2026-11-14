@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz Blitz</title>
+
+<style>
+body {
+  background: #101827;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  padding: 20px;
+}
+.box {
+  background: #202d42;
+  padding: 20px;
+  border-radius: 18px;
+  max-width: 400px;
+  margin: auto;
+}
+button {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 10px;
+  background: #3978ff;
+  color: white;
+  font-size: 16px;
+}
+button:active {
+  background: #2455bd;
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+<h1>⚡ Quiz Blitz</h1>
+<h3 id="question">Loading...</h3>
+<div id="options"></div>
+<p id="result"></p>
+<p id="score">Score: 0</p>
+<button onclick="nextQuestion()">Next Question</button>
+<button onclick="restart()">Restart Game</button>
+</div>
+
+<script>
+const questions = [
+{
+q: "What is the capital of Pakistan?",
+o: ["Karachi","Lahore","Islamabad","Peshawar"],
+a: 2
+},
+{
+q: "What is 5 × 6?",
+o: ["25","30","35","40"],
+a: 1
+},
+{
+q: "Which planet is called the Red Planet?",
+o: ["Earth","Mars","Jupiter","Venus"],
+a: 1
+},
+{
+q: "Which language runs in a browser?",
+o: ["Python","Java","JavaScript","C++"],
+a: 2
+},
+{
+q: "How many sides does a triangle have?",
+o: ["2","3","4","5"],
+a: 1
+}
+];
+
+let index = 0;
+let points = 0;
+let answered = false;
+
+function loadQuestion() {
+  answered = false;
+  document.getElementById("result").textContent = "";
+  
+  if(index >= questions.length) {
+    document.getElementById("question").textContent =
+      "Game Completed!";
+    document.getElementById("options").innerHTML = "";
+    document.getElementById("result").textContent =
+      "Final Score: " + points + "/" + questions.length;
+    return;
+  }
+
+  let q = questions[index];
+  document.getElementById("question").textContent = q.q;
+
+  let html = "";
+  q.o.forEach((option, i) => {
+    html += `<button onclick="checkAnswer(${i})">${option}</button>`;
+  });
+
+  document.getElementById("options").innerHTML = html;
+  document.getElementById("score").textContent =
+    "Score: " + points;
+}
+
+function checkAnswer(choice) {
+  if(answered || index >= questions.length) return;
+  answered = true;
+
+  if(choice === questions[index].a) {
+    points++;
+    document.getElementById("result").textContent = "Correct! 🎉";
+  } else {
+    document.getElementById("result").textContent = "Wrong answer!";
+  }
+
+  document.getElementById("score").textContent =
+    "Score: " + points;
+}
+
+function nextQuestion() {
+  if(index < questions.length) index++;
+  loadQuestion();
+}
+
+function restart() {
+  index = 0;
+  points = 0;
+  loadQuestion();
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
