@@ -587,3 +587,14 @@ document.addEventListener("visibilitychange",()=>{
     stopClock();
   }
 });
+<script>
+document.querySelectorAll(".pick").forEach(function(button){
+  button.addEventListener("click",function(){
+    document.querySelectorAll(".pick").forEach(function(b){
+      b.classList.remove("selected");
+    });
+    button.classList.add("selected");
+    document.getElementById("continue").disabled=false;
+  });
+});
+</script>
