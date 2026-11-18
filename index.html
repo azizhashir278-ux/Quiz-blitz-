@@ -1,139 +1,516 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quiz Blitz</title>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>QUIVOX</title>
 <style>
-body {
-  background: #101827;
-  color: white;
-  font-family: Arial;
-  text-align: center;
-  padding: 20px;
+:root{
+--bg:#080d18;--panel:#14233a;--line:#304663;
+--lime:#c9ff35;--cyan:#43e7ff;--white:#f5f7ff;
+--muted:#9aaac2;--green:#4be0a1;--red:#ff6d86;
 }
-.box {
-  background: #202d42;
-  padding: 20px;
-  border-radius: 18px;
-  max-width: 400px;
-  margin: auto;
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+margin:0;min-height:100vh;background:
+radial-gradient(ellipse at 50% -15%,#203653,#0b1423 48%,#070b13);
+color:var(--white);font-family:Arial,sans-serif;
 }
-button {
-  display: block;
-  width: 100%;
-  padding: 14px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 10px;
-  background: #3978ff;
-  color: white;
-  font-size: 16px;
+.app{max-width:560px;margin:auto;min-height:100vh;padding:18px;display:flex;flex-direction:column}
+.top{display:flex;justify-content:flex-end;gap:8px}
+.audio{background:#172943;border:1px solid var(--line);color:white;border-radius:30px;padding:9px 12px;font-weight:bold;font-size:11px}
+.brand{text-align:center;margin:25px 0 30px}
+.logo{font-size:clamp(44px,12vw,64px);font-weight:1000;letter-spacing:5px;color:var(--lime);text-shadow:0 0 25px #c9ff3550}
+.tag{font-size:11px;letter-spacing:3px;color:#a9b9d0;margin-top:8px}
+.screen{display:none;flex:1;flex-direction:column}
+.screen.active{display:flex}
+h2{text-align:center;font-size:25px;margin:8px 0}
+.sub{text-align:center;color:var(--muted);font-size:13px;margin:5px 0 24px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.pick{
+min-height:112px;border:1px solid var(--line);border-radius:18px;
+background:linear-gradient(145deg,#172943,#101b2e);
+color:white;font-size:18px;font-weight:850;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
 }
-button:active {
-  background: #2455bd;
+.emoji{font-size:30px}
+.pick.selected,.difficulty.selected{border:2px solid var(--lime);background:#1d3044}
+.bottom{margin-top:auto;padding-top:24px}
+button{cursor:pointer}
+.action{
+width:100%;min-height:56px;border:0;border-radius:15px;
+background:var(--lime);color:#111827;font-size:17px;font-weight:950;
 }
+.action:disabled{opacity:.4}
+.back{background:transparent;color:#b8c8de;border:1px solid var(--line);border-radius:13px;padding:12px 18px;font-weight:bold}
+.difficulties{display:grid;gap:12px}
+.difficulty{
+min-height:67px;border:1px solid var(--line);border-radius:16px;
+background:#14233a;color:white;padding:12px 18px;
+display:flex;align-items:center;justify-content:space-between;
+font-size:17px;font-weight:850;text-align:left;
+}
+.difficulty small{display:block;color:var(--muted);font-size:11px;margin-top:5px}
+.dot{height:11px;width:11px;border-radius:50%;background:var(--lime)}
+.panel{background:linear-gradient(150deg,#15243a,#101a2b);border:1px solid var(--line);border-radius:22px;padding:17px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#0a1423;border:1px solid #263b57;border-radius:12px;text-align:center;padding:9px 3px}
+.stat strong{display:block;color:var(--lime);font-size:23px}
+.stat span{font-size:10px;color:var(--muted)}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:15px}
+.track{height:6px;background:#293b55;border-radius:20px;margin-top:9px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,var(--lime),var(--cyan));width:0}
+.question{font-size:24px;line-height:1.35;font-weight:bold;margin:25px 0 20px}
+.answers{display:grid;gap:10px}
+.answer{min-height:53px;text-align:left;padding:13px;border-radius:13px;background:#1a2a42;border:1px solid #3a5272;color:white;font-size:15px;font-weight:bold}
+.answer:disabled{opacity:1}
+.answer.correct{background:#174638;border-color:var(--green)}
+.answer.wrong{background:#51283a;border-color:var(--red)}
+.feedback{min-height:28px;color:var(--cyan);font-size:13px;font-weight:bold;margin-top:12px}
+.nextrow{display:flex;align-items:center;gap:10px;margin-top:15px}
+.nextrow .action{width:auto;min-width:110px;min-height:48px;padding:0 15px}
+.result{text-align:center;padding:25px 18px}
+.score{font-size:60px;font-weight:1000;color:var(--lime);margin:15px}
+.result p{color:var(--muted);line-height:1.5}
+@media(max-width:370px){.app{padding:13px}.pick{min-height:100px;font-size:16px}.brand{margin:18px 0 23px}}
 </style>
 </head>
-
 <body>
-<div class="box">
-<h1>⚡ Quiz Blitz</h1>
-<h3 id="question">Loading...</h3>
-<div id="options"></div>
-<p id="result"></p>
-<p id="score">Score: 0</p>
-<button onclick="nextQuestion()">Next Question</button>
-<button onclick="restart()">Restart Game</button>
+<main class="app">
+
+<div class="top">
+<button class="audio" id="sfx">SFX ON</button>
+<button class="audio" id="music">MUSIC OFF</button>
 </div>
 
+<header class="brand">
+<div class="logo">QUIVOX</div>
+<div class="tag">THINK FAST. PLAY SMART.</div>
+</header>
+
+<section class="screen active" id="categoryScreen">
+<h2>Choose your category</h2>
+<p class="sub">Pick a challenge to get started</p>
+<div class="cards">
+<button class="pick" data-cat="Maths"><span class="emoji">🧮</span>Maths</button>
+<button class="pick" data-cat="Science"><span class="emoji">🔬</span>Science</button>
+<button class="pick" data-cat="GK"><span class="emoji">🌍</span>GK</button>
+<button class="pick" data-cat="Riddles"><span class="emoji">🧩</span>Riddles</button>
+</div>
+<div class="bottom">
+<button class="action" id="continue" disabled>CONTINUE</button>
+</div>
+</section>
+
+<section class="screen" id="difficultyScreen">
+<h2>Choose difficulty</h2>
+<p class="sub" id="chosenCategory"></p>
+<div class="difficulties">
+<button class="difficulty" data-level="Easy">🟢 EASY <small>Warm up</small><span class="dot"></span></button>
+<button class="difficulty" data-level="Medium">🔵 MEDIUM <small>Think it through</small><span class="dot"></span></button>
+<button class="difficulty" data-level="Hard">🟠 HARD <small>Challenge yourself</small><span class="dot"></span></button>
+<button class="difficulty" data-level="Impossible">🟣 IMPOSSIBLE <small>Tricky, but solvable</small><span class="dot"></span></button>
+</div>
+<div class="bottom" style="display:flex;gap:10px">
+<button class="back" id="back">BACK</button>
+<button class="action" id="start" disabled>START GAME</button>
+</div>
+</section>
+
+<section class="screen" id="gameScreen">
+<div class="panel">
+<div class="stats">
+<div class="stat"><strong id="score">0</strong><span>SCORE</span></div>
+<div class="stat"><strong id="lives">3</strong><span>LIVES</span></div>
+<div class="stat"><strong id="timer">30</strong><span>SECONDS</span></div>
+</div>
+<div class="meta">
+<span id="number">QUESTION 1 / 20</span>
+<span id="streak">STREAK: 0</span>
+</div>
+<div class="track"><div class="fill" id="progress"></div></div>
+<div class="meta">
+<span id="gameLabel"></span>
+<span id="bankCount"></span>
+</div>
+<div class="question" id="question"></div>
+<div class="answers" id="answers"></div>
+<div class="feedback" id="feedback"></div>
+<div class="nextrow">
+<span style="flex:1;color:var(--muted);font-size:11px">15 correct in a row = +1 life</span>
+<button class="action" id="next" style="display:none">NEXT</button>
+</div>
+</div>
+</section>
+
+<section class="screen" id="resultScreen">
+<div class="panel result">
+<h2 id="resultTitle">ROUND COMPLETE</h2>
+<div class="score" id="finalScore">0/20</div>
+<p id="resultInfo"></p>
+<button class="action" id="again">PLAY AGAIN</button>
+<button class="back" id="menu" style="width:100%;margin-top:12px">MAIN MENU</button>
+</div>
+</section>
+
+</main>
+
 <script>
-const questions = [
-{
-q: "What is the capital of Pakistan?",
-o: ["Karachi","Lahore","Islamabad","Peshawar"],
-a: 2
-},
-{
-q: "What is 5 × 6?",
-o: ["25","30","35","40"],
-a: 1
-},
-{
-q: "Which planet is called the Red Planet?",
-o: ["Earth","Mars","Jupiter","Venus"],
-a: 1
-},
-{
-q: "Which language runs in a browser?",
-o: ["Python","Java","JavaScript","C++"],
-a: 2
-},
-{
-q: "How many sides does a triangle have?",
-o: ["2","3","4","5"],
-a: 1
+"use strict";
+const $=id=>document.getElementById(id);
+
+const screens=["categoryScreen","difficultyScreen","gameScreen","resultScreen"];
+function show(id){
+screens.forEach(s=>$(s).classList.toggle("active",s===id));
 }
+
+let category="",level="",round=[],index=0,score=0,lives=3,streak=0;
+let timeLeft=30,clock=null,answered=false,bonusUsed=false;
+
+const settings={
+Easy:{time:30,lives:3,count:75},
+Medium:{time:20,lives:2,count:75},
+Hard:{time:15,lives:1,count:75},
+Impossible:{time:10,lives:1,count:75}
+};
+
+let sfxOn=true,musicOn=false,audioCtx=null,musicTimer=null,musicStep=0;
+
+function unlockAudio(){
+try{
+if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+if(audioCtx.state==="suspended")audioCtx.resume();
+}catch(e){}
+}
+
+function beep(freq=650,duration=.09,volume=.055,wave="sine",force=false){
+if(!sfxOn&&!force)return;
+unlockAudio();
+if(!audioCtx)return;
+try{
+const osc=audioCtx.createOscillator();
+const gain=audioCtx.createGain();
+osc.type=wave;
+osc.frequency.setValueAtTime(freq,audioCtx.currentTime);
+gain.gain.setValueAtTime(.0001,audioCtx.currentTime);
+gain.gain.exponentialRampToValueAtTime(volume,audioCtx.currentTime+.012);
+gain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+duration);
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+osc.start();
+osc.stop(audioCtx.currentTime+duration+.02);
+}catch(e){}
+}
+
+function startMusic(){
+if(musicTimer)return;
+unlockAudio();
+musicOn=true;
+$("music").textContent="MUSIC ON";
+const notes=[392,494,587,494,440,523,659,523,392,494,587,784,659,587,494,440];
+musicTimer=setInterval(()=>{
+beep(notes[musicStep++%notes.length],.22,.014,"triangle",true);
+},360);
+}
+
+function stopMusic(){
+musicOn=false;
+clearInterval(musicTimer);
+musicTimer=null;
+$("music").textContent="MUSIC OFF";
+}
+
+$("sfx").onclick=()=>{
+unlockAudio();
+sfxOn=!sfxOn;
+$("sfx").textContent="SFX "+(sfxOn?"ON":"OFF");
+if(sfxOn)beep(880,.12,.06);
+};
+
+$("music").onclick=()=>{
+unlockAudio();
+if(musicOn)stopMusic();
+else startMusic();
+};
+
+function shuffle(array){
+let a=array.slice();
+for(let i=a.length-1;i>0;i--){
+let j=Math.floor(Math.random()*(i+1));
+[a[i],a[j]]=[a[j],a[i]];
+}
+return a;
+}
+
+function makeQ(text,correct,wrong){
+return {
+text,
+correct:String(correct),
+options:shuffle([String(correct),...wrong.map(String)])
+};
+}
+
+const science=[
+["Which gas do plants absorb during photosynthesis?","Carbon dioxide",["Oxygen","Nitrogen","Hydrogen"]],
+["Which planet is called the Red Planet?","Mars",["Venus","Jupiter","Mercury"]],
+["What is the chemical symbol for gold?","Au",["Ag","Gd","Go"]],
+["Which organ pumps blood around the body?","Heart",["Lungs","Liver","Kidney"]],
+["What force pulls objects toward Earth?","Gravity",["Friction","Magnetism","Pressure"]],
+["What is the largest organ of the human body?","Skin",["Heart","Liver","Brain"]],
+["At what temperature does water freeze in Celsius?","0°C",["10°C","32°C","100°C"]],
+["Which part of a plant absorbs water?","Roots",["Leaves","Flower","Stem"]],
+["What is the centre of an atom called?","Nucleus",["Electron","Cell","Molecule"]],
+["Which vitamin can the body make with sunlight?","Vitamin D",["Vitamin A","Vitamin C","Vitamin K"]],
+["What is the nearest star to Earth?","The Sun",["Sirius","Polaris","Proxima Centauri"]],
+["Which blood cells help fight infection?","White blood cells",["Red blood cells","Platelets","Plasma"]],
+["What is liquid changing into gas called?","Evaporation",["Condensation","Freezing","Melting"]],
+["Which gas do humans need for respiration?","Oxygen",["Carbon dioxide","Helium","Methane"]],
+["What is the hardest naturally occurring substance?","Diamond",["Quartz","Iron","Granite"]],
+["Which planet has prominent rings?","Saturn",["Earth","Mars","Venus"]],
+["What is the basic unit of life?","Cell",["Atom","Tissue","Organ"]],
+["Which instrument measures temperature?","Thermometer",["Barometer","Ammeter","Compass"]],
+["What is the main gas in Earth's atmosphere?","Nitrogen",["Oxygen","Carbon dioxide","Argon"]],
+["Which part of the eye controls light entering it?","Iris",["Retina","Lens","Cornea"]]
 ];
 
-let index = 0;
-let points = 0;
-let answered = false;
+const gk=[
+["What is the capital of Japan?","Tokyo",["Kyoto","Osaka","Seoul"]],
+["Which is the largest ocean?","Pacific Ocean",["Atlantic Ocean","Indian Ocean","Arctic Ocean"]],
+["What is the capital of Pakistan?","Islamabad",["Karachi","Lahore","Peshawar"]],
+["Which country is home to the Eiffel Tower?","France",["Italy","Spain","Germany"]],
+["Which is the largest continent?","Asia",["Africa","Europe","North America"]],
+["What is the currency of the United Kingdom?","Pound sterling",["Euro","Dollar","Franc"]],
+["Who was the first person to walk on the Moon?","Neil Armstrong",["Yuri Gagarin","Buzz Aldrin","Michael Collins"]],
+["Which sport uses a shuttlecock?","Badminton",["Tennis","Squash","Table tennis"]],
+["How many players from one team are on a football field?","11",["9","10","12"]],
+["Which country hosted the 2016 Summer Olympics?","Brazil",["China","Japan","Greece"]],
+["What is the largest hot desert?","Sahara Desert",["Gobi Desert","Arabian Desert","Kalahari Desert"]],
+["What is the capital of Australia?","Canberra",["Sydney","Melbourne","Perth"]],
+["Who wrote Romeo and Juliet?","William Shakespeare",["Charles Dickens","Jane Austen","Mark Twain"]],
+["Which city is famous for the Colosseum?","Rome",["Athens","Cairo","Istanbul"]],
+["What is the line at 0° latitude called?","Equator",["Prime Meridian","Tropic of Cancer","Arctic Circle"]],
+["Which country gifted the Statue of Liberty to the USA?","France",["Canada","Spain","Germany"]],
+["Which game uses check and checkmate?","Chess",["Cricket","Hockey","Golf"]],
+["Which athlete is famous for sprinting?","Usain Bolt",["Roger Federer","Lionel Messi","Michael Phelps"]],
+["Which civilization built the pyramids at Giza?","Ancient Egyptians",["Romans","Aztecs","Persians"]],
+["Which country is shaped like a boot?","Italy",["Greece","Portugal","Norway"]]
+];
 
-function loadQuestion() {
-  answered = false;
-  document.getElementById("result").textContent = "";
+const riddles=[
+["What has keys but cannot open locks?","A piano",["A map","A clock","A door"]],
+["What gets wetter the more it dries?","A towel",["A sponge","A cloud","A river"]],
+["What has a face and two hands but no arms or legs?","A clock",["A statue","A robot","A book"]],
+["What has to be broken before you can use it?","An egg",["A glass","A rule","A pencil"]],
+["What goes up but never comes down?","Your age",["A balloon","Smoke","A lift"]],
+["What has one eye but cannot see?","A needle",["A storm","A potato","A camera"]],
+["What has many teeth but cannot bite?","A comb",["A shark","A zipper","A saw"]],
+["What travels around the world while staying in one corner?","A postage stamp",["A compass","A plane","A shadow"]],
+["What has a neck but no head?","A bottle",["A shirt","A guitar","A tree"]],
+["What belongs to you but other people use it more?","Your name",["Your phone","Your shoes","Your house"]],
+["What has words but never speaks?","A book",["A radio","A parrot","A teacher"]],
+["What has cities but no houses, forests but no trees?","A map",["A dream","A globe","A painting"]],
+["What can you catch but not throw?","A cold",["A ball","A shadow","A fish"]],
+["What runs but never walks?","A river",["A dog","A clock","A person"]],
+["What has four legs but cannot walk?","A table",["A horse","A chair","A cat"]],
+["What is full of holes but still holds water?","A sponge",["A net","A basket","A sieve"]],
+["What can fill a room but takes no space?","Light",["Air","Sound","Heat"]],
+["What has 13 hearts but no other organs?","A deck of cards",["A calendar","A hospital","A flower"]],
+["What kind of room has no doors or windows?","A mushroom",["A classroom","A bedroom","A showroom"]],
+["What has branches but no leaves or fruit?","A bank",["A tree","A river","A family"]]
+];
+
+function mathQuestion(d,n){
+let a,b,c,ans,text;
+if(d==="Easy"){
+a=3+(n*7)%37;b=2+(n*11)%29;
+switch(n%4){
+case 0:ans=a+b;text=`What is ${a} + ${b}?`;break;
+case 1:if(a<b)[a,b]=[b,a];ans=a-b;text=`What is ${a} − ${b}?`;break;
+case 2:a=2+n%12;b=2+(n*3)%10;ans=a*b;text=`What is ${a} × ${b}?`;break;
+default:a=2+n%9;b=2+(n*5)%9;ans=b;text=`What is ${a*b} ÷ ${a}?`;
+}
+}else if(d==="Medium"){
+a=3+(n*5)%20;b=2+(n*7)%15;c=2+(n*3)%9;
+if(n%2){ans=a+b*c;text=`Solve: ${a} + ${b} × ${c}.`;}
+else{ans=(a+b)*c;text=`Solve: (${a} + ${b}) × ${c}.`;}
+}else if(d==="Hard"){
+a=3+n%17;b=2+(n*3)%13;c=2+(n*7)%9;
+if(n%2){ans=c;text=`If ${a}x + ${b} = ${a*c+b}, what is x?`;}
+else{ans=a+4*b;text=`Find the next number: ${a}, ${a+b}, ${a+2*b}, ${a+3*b}, ___`;}
+}else{
+a=2+n%9;b=3+(n*5)%11;
+if(n%2){ans=a;text=`A number is doubled, then ${b} is added. The result is ${2*a+b}. What was the number?`;}
+else{ans=a*10+b;text=`A two-digit number has tens digit ${a} and ones digit ${b}. What is it?`;}
+}
+return makeQ(text,ans,[Number(ans)+2,Number(ans)-3,Number(ans)+5]);
+}
+
+function createBank(cat,d){
+let count=cat==="GK"?125:75;
+let source=cat==="Science"?science:cat==="GK"?gk:riddles;
+let bank=[];
+for(let i=0;i<count;i++){
+let item;
+if(cat==="Maths")item=mathQuestion(d,i+1);
+else{
+let f=source[i%source.length];
+let lead=d==="Easy"?"":d==="Medium"?"Choose the accurate answer: ":d==="Hard"?"Carefully consider this question: ":"Think carefully before answering: ";
+item=makeQ(lead+f[0],f[1],f[2]);
+}
+bank.push({...item,id:i});
+}
+return bank;
+}
+
+const banks={};
+for(const c of ["Maths","Science","GK","Riddles"]){
+banks[c]={};
+for(const d of ["Easy","Medium","Hard","Impossible"]){
+banks[c][d]=createBank(c,d);
+}
+}
+
+const used={};
+function bankKey(){return category+"|"+level;}
+
+function freshRound(){
+let all=banks[category][level];
+let k=bankKey();
+if(!used[k])used[k]=new Set();
+if(used[k].size>=all.length)used[k].clear();
+let available=all.filter(q=>!used[k].has(q.id));
+if(available.length<20){
+used[k].clear();
+available=all.slice();
+}
+let chosen=shuffle(available).slice(0,20);
+chosen.forEach(q=>used[k].add(q.id));
+return chosen;
+}
+
+function stopClock(){
+if(clock){clearInterval(clock);clock=null;}
+}
+
+function startClock(){
+stopClock();
+timeLeft=settings[level].time;
+$("timer").textContent=timeLeft;
+clock=setInterval(()=>{
+timeLeft--;
+$("timer").textContent=timeLeft;
+if(timeLeft<=5)beep(850,.045,.02,"square");
+if(timeLeft<=0&&!answered){
+stopClock();
+timeoutAnswer();
+}
+},1000);
+}
+
+function begin(){
+unlockAudio();
+round=freshRound();
+index=0;score=0;streak=0;bonusUsed=false;
+lives=settings[level].lives;
+show("gameScreen");
+renderQuestion();
+}
+
+function renderQuestion(){
+answered=false;
+$("score").textContent=score;
+$("lives").textContent=lives;
+$("number").textContent=`QUESTION ${index+1} / 20`;
+$("streak").textContent="STREAK: "+streak;
+$("progress").style.width=(index/20*100)+"%";
+$("gameLabel").textContent=category+" · "+level;
+$("bankCount").textContent=used[bankKey()].size+" / "+banks[category][level].length;
+let item=round[index];
+$("question").textContent=item.text;
+$("answers").innerHTML="";
+$("feedback").textContent="";
+$("next").style.display="none";
+
+item.options.forEach(option=>{
+let button=document.createElement("button");
+button.type="button";
+button.className="answer";
+button.textContent=option;
+button.onclick=()=>choose(option,button);
+$("answers").appendChild(button);
+});
+startClock();
+}
+
+function choose(option,button){
+if(answered)return;
+answered=true;stopClock();
+let item=round[index];
+[...$("answers").children].forEach(b=>{
+b.disabled=true;
+if(b.textContent===item.correct)b.classList.add("correct");
+});
+if(option===item.correct){
+score++;streak++;
+beep(760,.12,.06);
+$("feedback").textContent="Correct! +1 point";
+if(streak>=15&&!bonusUsed){
+lives++;bonusUsed=true;
+$("feedback").textContent="15-streak bonus: +1 life!";
+}
+}else{
+streak=0;lives--;
+button.classList.add("wrong");
+beep(190,.2,.06,"sawtooth");
+$("feedback").textContent="Not quite. Answer: "+item.correct;
+}
+updateAfterAnswer();
+}
+
+function timeoutAnswer(){
+answered=true;streak=0;lives--;
+let item=round[index];
+[...$("answers").children].forEach(b=>{
+b.disabled=true;
+if(b.textContent===item.correct)b.classList.add("correct");
+});
+$("feedback").textContent="Time's up! Answer: "+item.correct;
+beep(160,.2,.06,"sawtooth");
+updateAfterAnswer();
+}
+
+function updateAfterAnswer(){
+$("score").textContent=score;
+$("lives").textContent=lives;
+$("streak").textContent="STREAK: "+streak;
+$("next").style.display="block";
+$("next").textContent=(index===19||lives<=0)?"RESULTS":"NEXT";
+}
+
+function advance(){
+if(!answered)return;
+if(lives<=0||index===19){finish();return;}
+index++;
+renderQuestion();
+}
+
+function finish(){
+stopClock();
+show("resultScreen");
+$("finalScore").textContent=score+"/20";
+$("resultTitle").textContent=lives<=0?"ROUND OVER":"ROUND COMPLETE";
+$("resultInfo").textContent=category+" · "+level+" | Next round avoids questions already played this session.";
+beep(520,.15,.04);
+}
+
+document.querySelectorAll("[data-cat]").forEach(button=>{
+button.onclick=()=>{
+unlockAudio();
+category=button.dataset.cat;
+document.querySelectorAll("[data-cat]").forEach(b=>b.classList.toggle("selected",b===button));
+$("continue").disabled=false;
+beep(600,.07,.035);
+};
+});
+
   
-  if(index >= questions.length) {
-    document.getElementById("question").textContent =
-      "Game Completed!";
-    document.getElementById("options").innerHTML = "";
-    document.getElementById("result").textContent =
-      "Final Score: " + points + "/" + questions.length;
-    return;
-  }
-
-  let q = questions[index];
-  document.getElementById("question").textContent = q.q;
-
-  let html = "";
-  q.o.forEach((option, i) => {
-    html += `<button onclick="checkAnswer(${i})">${option}</button>`;
-  });
-
-  document.getElementById("options").innerHTML = html;
-  document.getElementById("score").textContent =
-    "Score: " + points;
-}
-
-function checkAnswer(choice) {
-  if(answered || index >= questions.length) return;
-  answered = true;
-
-  if(choice === questions[index].a) {
-    points++;
-    document.getElementById("result").textContent = "Correct! 🎉";
-  } else {
-    document.getElementById("result").textContent = "Wrong answer!";
-  }
-
-  document.getElementById("score").textContent =
-    "Score: " + points;
-}
-
-function nextQuestion() {
-  if(index < questions.length) index++;
-  loadQuestion();
-}
-
-function restart() {
-  index = 0;
-  points = 0;
-  loadQuestion();
-}
-
-loadQuestion();
-</script>
-</body>
-</html>
