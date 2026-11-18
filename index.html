@@ -514,3 +514,76 @@ beep(600,.07,.035);
 });
 
   
+// CONTINUE: category -> difficulty
+$("continue").onclick=()=>{
+  if(!category)return;
+  $("chosenCategory").textContent="Selected: "+category;
+  level="";
+  document.querySelectorAll("[data-level]").forEach(b=>{
+    b.classList.remove("selected");
+  });
+  $("start").disabled=true;
+  show("difficultyScreen");
+  beep(700,.08,.04);
+};
+
+// DIFFICULTY SELECTION
+document.querySelectorAll("[data-level]").forEach(button=>{
+  button.onclick=()=>{
+    level=button.dataset.level;
+    document.querySelectorAll("[data-level]").forEach(b=>{
+      b.classList.toggle("selected",b===button);
+    });
+    $("start").disabled=false;
+    beep(700,.07,.04);
+  };
+});
+
+// BACK
+$("back").onclick=()=>{
+  show("categoryScreen");
+  beep(400,.07,.03);
+};
+
+// START GAME
+$("start").onclick=()=>{
+  if(!category||!level)return;
+  begin();
+};
+
+// NEXT QUESTION
+$("next").onclick=()=>{
+  advance();
+};
+
+// PLAY AGAIN
+$("again").onclick=()=>{
+  begin();
+};
+
+// MAIN MENU
+$("menu").onclick=()=>{
+  stopClock();
+  show("categoryScreen");
+  category="";
+  level="";
+  $("continue").disabled=true;
+  $("start").disabled=true;
+
+  document.querySelectorAll("[data-cat]").forEach(b=>{
+    b.classList.remove("selected");
+  });
+
+  document.querySelectorAll("[data-level]").forEach(b=>{
+    b.classList.remove("selected");
+  });
+
+  beep(450,.08,.035);
+};
+
+// Stop timer when page is hidden
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){
+    stopClock();
+  }
+});
